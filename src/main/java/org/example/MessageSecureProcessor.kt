@@ -1,34 +1,33 @@
-package org.example;
+package org.example
 
+import org.example.AESCipher.decrypt
+import org.example.AESCipher.encrypt
+import org.example.AESCipher.generateAESKey
+import java.util.*
 
-import java.util.Base64;
-import java.util.Objects;
+object MessageSecureProcessor {
+    private const val ENCODE_START = "@ENCODE@"
+    private const val SPLITER = "@_@"
+    private const val ENCRYPTED_FORM = "$ENCODE_START%s$SPLITER%s "
 
-public class MessageSecureProcessor {
-    private static final String ENCODE_START = "@ENCODE@";
-    private static final String SPLITER = "@_@";
-    protected static final String ENCRYPTED_FORM = ENCODE_START + "%s" + SPLITER + "%s ";
-
-    public static String encrypt(String message, byte[] publicKey) {
-        byte[] aesKeyBytes = AESCipher.generateAESKey();
-        String base64EncryptedMessage = Base64.getMimeEncoder().encodeToString(AESCipher.encrypt(message.getBytes(), aesKeyBytes));
-        String base64EncryptedKey = Base64.getMimeEncoder().encodeToString(RSACipher.encrypt(aesKeyBytes, publicKey));
-
-        return String.format(ENCRYPTED_FORM, base64EncryptedKey, base64EncryptedMessage);
+    fun encrypt(message: String, publicKey: ByteArray?): String {
+        val aesKeyBytes = generateAESKey()
+        val base64EncryptedMessage =
+            Base64.getMimeEncoder().encodeToString(encrypt(message.toByteArray(), aesKeyBytes!!))
+        val base64EncryptedKey = Base64.getMimeEncoder().encodeToString(RSACipher.encrypt(aesKeyBytes, publicKey))
+        return String.format(ENCRYPTED_FORM, base64EncryptedKey, base64EncryptedMessage)
     }
 
-    public static String decrypt(String message, byte[] privateKey) {
-        String[] parts = message.split(SPLITER);
-        String base64EncryptedKey = parts[0].replace(ENCODE_START, "");
-        String base64EncryptedMessage = parts[1];
+    fun decrypt(message: String, privateKey: ByteArray?): String? {
+        val parts = message.split(SPLITER.toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val base64EncryptedKey = parts[0].replace(ENCODE_START, "")
+        val base64EncryptedMessage = parts[1]
         try {
-            byte[] aesKey = RSACipher.decrypt(Base64.getMimeDecoder().decode(base64EncryptedKey), privateKey);
-            return new String(Objects.requireNonNull(AESCipher.decrypt(Base64.getMimeDecoder().decode(base64EncryptedMessage), aesKey)));
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            val aesKey = RSACipher.decrypt(Base64.getMimeDecoder().decode(base64EncryptedKey), privateKey)
+            return String(decrypt(Base64.getMimeDecoder().decode(base64EncryptedMessage), aesKey!!)!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 }
-

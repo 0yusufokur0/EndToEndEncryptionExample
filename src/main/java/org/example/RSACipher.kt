@@ -1,77 +1,61 @@
-package org.example;
+package org.example
 
+import java.security.*
+import java.security.interfaces.RSAPublicKey
+import java.security.spec.InvalidKeySpecException
+import java.security.spec.PKCS8EncodedKeySpec
+import java.security.spec.X509EncodedKeySpec
+import javax.crypto.BadPaddingException
+import javax.crypto.Cipher
+import javax.crypto.IllegalBlockSizeException
+import javax.crypto.NoSuchPaddingException
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.*;
-import java.security.PrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-
-public class RSACipher {
-
-    public static KeyPair generateKeyPair() {
+object RSACipher {
+    fun generateKeyPair(): KeyPair? {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            return keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            val keyGen = KeyPairGenerator.getInstance("RSA")
+            keyGen.initialize(2048)
+            return keyGen.generateKeyPair()
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
         }
-        return null;
+        return null
     }
 
-    public static byte[] encrypt(byte[] keyBytes, byte[] pubBytes) {
-        KeyFactory keyFactory;
+    fun encrypt(keyBytes: ByteArray?, pubBytes: ByteArray?): ByteArray? {
+        val keyFactory: KeyFactory
         try {
-            keyFactory = KeyFactory.getInstance("RSA");
-            X509EncodedKeySpec KeySpec = new X509EncodedKeySpec(pubBytes);
-            RSAPublicKey pubKey = (RSAPublicKey) keyFactory.generatePublic(KeySpec);
-
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-            return cipher.doFinal(keyBytes);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            keyFactory = KeyFactory.getInstance("RSA")
+            val KeySpec = X509EncodedKeySpec(pubBytes)
+            val pubKey = keyFactory.generatePublic(KeySpec) as RSAPublicKey
+            val cipher = Cipher.getInstance("RSA")
+            cipher.init(Cipher.ENCRYPT_MODE, pubKey)
+            return cipher.doFinal(keyBytes)
         }
-        return null;
+        catch (e: NoSuchAlgorithmException) { e.printStackTrace() }
+        catch (e: InvalidKeyException) { e.printStackTrace() }
+        catch (e: NoSuchPaddingException) { e.printStackTrace() }
+        catch (e: BadPaddingException) { e.printStackTrace() }
+        catch (e: InvalidKeySpecException) { e.printStackTrace() }
+        catch (e: IllegalBlockSizeException) { e.printStackTrace() }
+        return null
     }
 
-    public static byte[] decrypt(byte[] keyBytes, byte[] priBytes) {
-        KeyFactory keyFactory;
+    fun decrypt(keyBytes: ByteArray?, priBytes: ByteArray?): ByteArray? {
+        val keyFactory: KeyFactory
         try {
-            keyFactory = KeyFactory.getInstance("RSA");
-            PrivateKey privateKey = keyFactory.generatePrivate(new PKCS8EncodedKeySpec(priBytes));
-            Cipher cipher = Cipher.getInstance("RSA");
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            return cipher.doFinal(keyBytes);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
+            keyFactory = KeyFactory.getInstance("RSA")
+            val privateKey = keyFactory.generatePrivate(PKCS8EncodedKeySpec(priBytes))
+            val cipher = Cipher.getInstance("RSA")
+            cipher.init(Cipher.DECRYPT_MODE, privateKey)
+            return cipher.doFinal(keyBytes)
         }
-        return null;
+        catch (e: NoSuchAlgorithmException) { e.printStackTrace() }
+        catch (e: InvalidKeyException) { e.printStackTrace() }
+        catch (e: NoSuchPaddingException) { e.printStackTrace() }
+        catch (e: BadPaddingException) { e.printStackTrace() }
+        catch (e: InvalidKeySpecException) { e.printStackTrace() }
+        catch (e: IllegalBlockSizeException) { e.printStackTrace() }
+        return null
     }
 }
